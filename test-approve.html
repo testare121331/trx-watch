@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Approve Tron</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; background: #f0f8ff; }
+    .box { max-width: 700px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+    input { width: 100%; padding: 12px; font-size: 16px; margin: 10px 0; }
+    button { width: 100%; padding: 15px; font-size: 18px; background: #0066ff; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    button:hover { background: #0055dd; }
+    pre { background: #f4f4f4; padding: 15px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>🧪 Test Approve Tron</h2>
+  
+  <p><strong>Introdu adresa Spender:</strong></p>
+  <input type="text" id="spender" value="TNuoKL1ni8aoshfFL1ASca1Gou9RXwAzfn">
+
+  <button onclick="testApprove()">🚀 TRIMITE APPROVE TEST</button>
+
+  <pre id="output">Aici va apărea rezultatul...</pre>
+</div>
+
+<script>
+async function testApprove() {
+    const spender = document.getElementById('spender').value.trim();
+    const output = document.getElementById('output');
+
+    if (!window.tronWeb) {
+        output.textContent = "❌ TronLink nu este detectat!\n\nInstalează TronLink și conectează-te.";
+        return;
+    }
+
+    output.textContent = "Se procesează... Așteaptă confirmarea în TronLink...";
+
+    try {
+        const tokenAddress = "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"; 
+        
+        const contract = await window.tronWeb.contract().at(tokenAddress);
+        const result = await contract.approve(spender, "1000000").send();
+        
+        output.textContent = "✅ SUCCESS!\n\nTransaction ID:\n" + result;
+        console.log("TxID:", result);
+    } catch (error) {
+        output.textContent = "❌ Eroare:\n" + error.message;
+    }
+}
+</script>
+
+</body>
+</html>
